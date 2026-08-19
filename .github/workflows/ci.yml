@@ -22,6 +22,7 @@ jobs:
       JWT_DEVICE_REFRESH_SECRET: dddddddddddddddddddddddddddddddd
       JWT_AUDIT_ACCESS_SECRET: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
       JWT_ISSUER: verigate-ci-compose-validation
+      AUTH_ABUSE_HMAC_SECRET: gggggggggggggggggggggggggggggggg
       ENCRYPTION_KEY: ffffffffffffffffffffffffffffffff
     steps:
       - name: Check out repository and submodules
@@ -84,6 +85,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
 
       - run: npm ci
+      - run: npm run audit:dependencies
       - run: npm run type-check
       - run: npm run build
       - run: npm test -- --runInBand
@@ -214,6 +216,7 @@ jobs:
           cache-dependency-path: web-dashboard/package-lock.json
 
       - run: npm ci
+      - run: npm run audit:dependencies
       - run: npm run type-check
       - run: npm run lint
       - name: Run dashboard tests deterministically

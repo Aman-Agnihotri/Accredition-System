@@ -69,6 +69,9 @@ services:
       NODE_ENV: production
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      REDIS_REQUIRED: "true"
+      RATE_LIMIT_STORE: redis
+      TRUST_PROXY_HOPS: "1"
       JWT_ACCOUNT_ACCESS_SECRET: ${JWT_ACCOUNT_ACCESS_SECRET:?JWT_ACCOUNT_ACCESS_SECRET is required}
       JWT_ACCOUNT_REFRESH_SECRET: ${JWT_ACCOUNT_REFRESH_SECRET:?JWT_ACCOUNT_REFRESH_SECRET is required}
       JWT_DEVICE_ACCESS_SECRET: ${JWT_DEVICE_ACCESS_SECRET:?JWT_DEVICE_ACCESS_SECRET is required}
@@ -81,8 +84,6 @@ services:
       QR_AUTHORITY_PRIVATE_KEY_BASE64: ${QR_AUTHORITY_PRIVATE_KEY_BASE64:?QR_AUTHORITY_PRIVATE_KEY_BASE64 is required}
       QR_AUTHORITY_KEYRING_JSON: ${QR_AUTHORITY_KEYRING_JSON:?QR_AUTHORITY_KEYRING_JSON is required}
       APNS_ENABLED: "false"
-    ports:
-      - "3000:3000"
     depends_on:
       migration:
         condition: service_completed_successfully

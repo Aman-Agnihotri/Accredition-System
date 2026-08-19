@@ -151,22 +151,43 @@ tests do not satisfy these release gates.
 ## Abuse and traffic controls
 
 Login failure counters are PostgreSQL-backed and keyed with HMAC-normalized
-account/network identifiers. Store failures fail login closed. Public login,
-ordinary account, device sync, audit upload, and expensive administration use
-separate bounded request budgets. Body allocation happens after authentication
-on protected routes.
+account/network identifiers. Active account or network blocks are checked
+before password verification, and store failures fail login closed. Public
+login and the pre-authentication protected-route admission budget are keyed by
+network. Ordinary account, device sync, audit upload, and expensive
+administration use separate principal budgets after authentication. Body
+allocation happens after authentication on protected routes.
 
 Traffic settings are:
 
 - `AUTH_RATE_WINDOW_MS` / `AUTH_RATE_MAX`
-- `API_RATE_WINDOW_MS` / `API_RATE_MAX`
+- `API_RATE_WINDOW_MS` / `API_ADMISSION_RATE_MAX` / `API_RATE_MAX`
 - `SYNC_RATE_MAX`
 - `AUDIT_UPLOAD_RATE_MAX`
 - `EXPENSIVE_RATE_MAX`
+- `RATE_LIMIT_STORE`
+- `TRUST_PROXY_HOPS`
 
-The availability limiter currently has an explicit in-process fallback. Do not
-run more than one backend instance until a shared limiter store is implemented
-and verified under load.
+Production requires `RATE_LIMIT_STORE=redis`, `REDIS_REQUIRED=true`, and an
+`AUTH_ABUSE_HMAC_SECRET` of at least 32 bytes. All backend instances then share
+the same opaque limiter keys. `TRUST_PROXY_HOPS` defaults to zero and accepts
+only zero through three trusted proxy hops; set it to the exact deployment
+topology. The standard Compose stack exposes the backend only through its
+single Nginx hop and therefore sets it to one. The loopback-only compatibility
+harness connects directly and keeps it at zero.
+
+## Dependency audit exception
+
+Backend dependency CI rejects high and critical production advisories. As of
+2026-08-19, the latest `firebase-admin` release (`14.2.0`) retains six moderate
+advisories exclusively through its optional Google Cloud Storage dependency
+chain (`@google-cloud/storage`, `retry-request`, `teeny-request`, `gaxios`, and
+`uuid`). VeriGate imports Firebase Admin only for Messaging and does not invoke
+Storage. There is no patched Firebase Admin upgrade available; npm's suggested
+`10.3.0` change is a downgrade and does not represent a supported remediation.
+The backend owner must re-check this exception by 2026-11-19 and remove it as
+soon as Firebase publishes a release with a patched chain. The dashboard audit
+has no exception and rejects every reported severity.
 
 ## Health, shutdown, and incident response
 
