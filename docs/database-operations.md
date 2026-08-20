@@ -141,6 +141,59 @@ A backup configuration without a successful isolated restore is not restore
 proof. Stop if the restore, connection, counts, constraints, or representative
 queries do not agree.
 
+### Machine-derived recovery evidence
+
+The tracked recovery command restores the application-owned `public` schema
+from a PostgreSQL custom-format archive into a new disposable PostgreSQL
+container, excluding provider-managed extension schemas while provisioning the
+standard UUID helpers referenced by application defaults. It verifies the
+archive table of contents, migration lineage, required relations,
+representative reads, reference
+invariants, schema fingerprint, and measured recovery duration, and then removes
+the disposable target. It emits a restrictive-permission JSON evidence file and
+SHA-256 sidecar. The JSON payload is HMAC-signed and contains no database URL,
+password, record-level data, or exported PII.
+
+Set a secret of at least 32 bytes in the approved operations secret store, then
+run from the repository root. Evidence output must be outside the repository:
+
+```bash
+export MIGRATION_RECOVERY_HMAC_SECRET='<operations-secret>'
+npm run recovery:restore -- -- \
+  --archive /secure/backups/verigate.dump \
+  --manifest /secure/backups/verigate.dump.manifest.txt \
+  --evidence /secure/evidence/verigate-restore.json \
+  --operator '<approved-operator-id>' \
+  --observation-until '2026-08-21T18:00:00Z' \
+  --max-rto-ms 900000
+```
+
+The backup manifest must bind the archive filename and SHA-256, source host and
+database, and migration count/maximum id. The command refuses an existing
+evidence path and fails closed if any validation or RTO check fails. The
+operator and observation window are an explicit migration approval record, not
+a substitute for the measured restore.
+
+Production `migrate:db` independently revalidates the HMAC, archive bytes,
+source/target host and database, evidence age, tool revision when configured,
+RTO, approval window, every recorded check, and the target's exact migration
+ledger digest before applying DDL. Configure:
+
+```text
+MIGRATION_RECOVERY_EVIDENCE_FILE=/secure/evidence/verigate-restore.json
+MIGRATION_RECOVERY_ARCHIVE_FILE=/secure/backups/verigate.dump
+MIGRATION_RECOVERY_HMAC_SECRET=<operations-secret>
+MIGRATION_RECOVERY_MAX_AGE_HOURS=24
+MIGRATION_EXPECTED_HOST=<complete-database-hostname>
+MIGRATION_EXPECTED_DATABASE=<database-name>
+MIGRATION_EXPECTED_TOOL_REVISION=<reviewed-repository-revision>
+```
+
+`migrate:status` remains read-only and does not require recovery evidence.
+Edited, stale, wrong-host, wrong-database, wrong-archive, expired-approval, RTO
+failure, failed-query, invalid-signature, and ledger-mismatch evidence cannot
+satisfy the production migration gate.
+
 ## Rollout
 
 After separate hosted authorization:
@@ -194,6 +247,13 @@ Rollback is capability-specific:
   the proven restore/reconciliation procedure;
 - record the selected recovery point, lost-write interval, and operator
   decision against the approved RPO/RTO.
+
+Application database pools enforce connection, query, statement, lock, and
+idle-transaction deadlines. Tune the corresponding `DB_*_TIMEOUT_MS` values to
+the measured workload, keeping the query deadline above the server statement
+deadline so PostgreSQL can cancel work and release capacity first. Connectivity,
+capacity, shutdown, lock, and timeout failures are retryable dependency errors;
+they are not authentication failures.
 
 ## Destructive demo seed refusal
 

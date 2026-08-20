@@ -28,6 +28,8 @@
     "seed:db": "npm --prefix backend run seed:db",
     "migrate:db": "npm --prefix backend run migrate:db",
     "migrate:status": "npm --prefix backend run migrate:status",
+    "recovery:restore": "npm --prefix backend run recovery:restore --",
+    "recovery:verify": "npm --prefix backend run recovery:verify",
     "migrate:events": "npm --prefix backend run migrate:events",
     "migrate:contracts": "npm --prefix backend run migrate:contracts",
     "start:backend": "npm --prefix backend start",
