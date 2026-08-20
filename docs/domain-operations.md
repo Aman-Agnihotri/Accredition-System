@@ -37,6 +37,23 @@ the dashboard will show that error rather than download JSON as a CSV file.
 Monitor export duration, database query latency, response aborts, process
 memory, and event-loop delay.
 
+Every user/scan CSV and paginated subject-data export appends requested and
+terminal metadata-only evidence. Subject exports require an explicit scope and
+operator reason, exclude authentication secrets, provider tokens, QR material,
+and raw device metadata, and require explicit confirmation for inactive users.
+
+## Privacy retention
+
+Retention policies are immutable versioned records spanning identity, scans,
+incidents/overrides, device history, notification tokens, export/audit evidence,
+backups, and deletion evidence. The seeded policy is a non-destructive draft.
+Dry-run and execute batches share a fixed cutoff and durable cursor, respect
+global/category/subject legal holds, and append hashed evidence without copying
+personal fields. Execute mode additionally requires an approved policy, the
+matching approval reference, and `PRIVACY_DESTRUCTIVE_MODE=enabled`. Backup
+retention remains an external provider responsibility and preserved evidence
+categories cannot be executed destructively.
+
 ## Notification delivery jobs
 
 `POST /api/notifications/send` requires one explicit audience:
@@ -59,10 +76,12 @@ The in-process worker:
    fencing token;
 3. renews the lease before half its lifetime while provider work remains in
    flight;
-4. sends only the snapshotted token, with provider deadlines and bounded
+4. rechecks active account, event membership, token, and registration authority
+   under the same per-user lifecycle lock immediately before provider delivery;
+5. sends only the snapshotted token, with provider deadlines and bounded
    concurrency;
-5. finishes only if owner, fencing token, and attempt number still match; and
-6. aggregates the parent as `delivered`, `partially_delivered`,
+6. finishes only if owner, fencing token, and attempt number still match; and
+7. aggregates the parent as `delivered`, `partially_delivered`,
    `blocked_configuration`, or `failed`.
 
 Sent recipients are never reclaimed because another recipient failed.

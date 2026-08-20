@@ -61,9 +61,16 @@ deliver it through an approved out-of-band channel; no email provider is
 implemented. Activation expires after 24 hours.
 
 Administrator-issued password reset tokens expire after 30 minutes. Activation,
-reset, password change, administrative deactivation, logout, and logout-all
+reset, password change, account lifecycle changes, logout, and logout-all
 invalidate the affected server-side session authority. Passwords must be 15 to
 128 characters and pass the local common-password check.
+
+An active account may be suspended to revoke sessions, push delivery, device
+authority, and current QR credentials while preserving event memberships and
+assignments. Resuming requires fresh authentication and QR issuance. Deactivation
+also disables memberships and assignments; later reactivation deliberately does
+not restore them. Each transition is serialized per user, requires a reason and
+optional expected prior state, and appends immutable status evidence.
 
 Do not log or retain activation/reset tokens after delivery.
 
@@ -141,7 +148,13 @@ Use this staged rotation:
    before removing the retiring key.
 
 The backend and Scan retain strict v2 verification only for migration
-compatibility. Do not retire v2 until migrations 13/14 are safely deployed,
+compatibility. Omitted protocol requests use v3; explicit v2 issuance is denied
+unless the PostgreSQL-backed global setting is enabled. Only an active global
+administrator can change that setting in the Dashboard, and each versioned
+change requires a reason, exact typed confirmation, and immutable audit event.
+No deployment environment variable can bypass this control.
+
+Do not retire v2 verification until migrations 13/14 are safely deployed,
 dual-verifier Scan adoption and fresh trust sync are established, Pass v3
 adoption is observed, the maximum v2 credential plus skew/offline windows have
 elapsed since last issuance, physical camera pairs pass, and product/security
