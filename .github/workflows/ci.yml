@@ -43,6 +43,9 @@ jobs:
       - name: Verify QR contract fixtures
         run: npm run verify:qr-contract-fixtures
 
+      - name: Verify operations contracts
+        run: npm run verify:operations-contracts
+
       - name: Reject unsupported public capability claims
         run: |
           node -e '

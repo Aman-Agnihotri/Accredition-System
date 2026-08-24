@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "alerts": [
+    { "id": "api-elevated-5xx", "severity": "page", "metric": "verigate_http_requests_total", "condition": "5xx ratio > 0.05 and total requests >= 20", "for": "5m", "runbook": "docs/operations-observability.md#elevated-http-failures" },
+    { "id": "api-latency-p99", "severity": "page", "metric": "verigate_http_request_duration_seconds", "condition": "p99 > 2.5", "for": "10m", "runbook": "docs/operations-observability.md#request-latency" },
+    { "id": "database-pool-waiting", "severity": "page", "metric": "verigate_database_pool_waiting", "condition": "value > 0", "for": "5m", "runbook": "docs/operations-observability.md#database-pool-pressure" },
+    { "id": "database-query-timeouts", "severity": "page", "metric": "verigate_database_query_timeouts_total", "condition": "increase > 3", "for": "5m", "runbook": "docs/operations-observability.md#database-query-timeouts" },
+    { "id": "notification-worker-stale", "severity": "page", "metric": "verigate_notification_worker_heartbeat_age_seconds", "condition": "value > 45", "for": "2m", "runbook": "docs/operations-observability.md#worker-heartbeat-stale" },
+    { "id": "notification-queue-old", "severity": "page", "metric": "verigate_notification_queue_oldest_age_seconds", "condition": "value > 300", "for": "10m", "runbook": "docs/operations-observability.md#notification-queue-age" },
+    { "id": "notification-expired-leases", "severity": "page", "metric": "verigate_notification_expired_leases", "condition": "value > 0", "for": "5m", "runbook": "docs/operations-observability.md#expired-delivery-leases" },
+    { "id": "notification-permanent-failures", "severity": "ticket", "metric": "verigate_notification_permanent_failures", "condition": "increase > 10", "for": "10m", "runbook": "docs/operations-observability.md#permanent-delivery-failures" },
+    { "id": "event-loop-delay", "severity": "page", "metric": "verigate_event_loop_delay_seconds", "condition": "p99 > 0.25", "for": "5m", "runbook": "docs/operations-observability.md#event-loop-delay" }
+  ]
+}

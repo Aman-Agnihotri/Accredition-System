@@ -13,6 +13,7 @@
     "test:pass": "npm --prefix verigate-pass test",
     "test:scan": "npm --prefix verigate-scan test",
     "verify:qr-contract-fixtures": "node scripts/verify-qr-contract-fixtures.js",
+    "verify:operations-contracts": "node scripts/operations/check-contracts.js",
     "compatibility:preflight": "node scripts/compatibility/cli.js preflight",
     "compatibility:up": "node scripts/compatibility/cli.js up",
     "compatibility:run": "node scripts/compatibility/cli.js run",
@@ -41,7 +42,7 @@
     "start:pass": "npm --prefix verigate-pass start",
     "start:scan": "npm --prefix verigate-scan start",
     "type-check": "npm --prefix backend run type-check && npm --prefix web-dashboard run type-check && npm --prefix verigate-pass run type-check && npm --prefix verigate-scan run type-check",
-    "validate": "npm run verify:qr-contract-fixtures && npm run type-check && npm run lint && npm test && npm run build && npm run doctor"
+    "validate": "npm run verify:qr-contract-fixtures && npm run verify:operations-contracts && npm run type-check && npm run lint && npm test && npm run build && npm run doctor"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

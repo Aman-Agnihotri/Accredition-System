@@ -219,3 +219,7 @@ For suspected credential exposure: remove the service from traffic, rotate the
 affected purpose-specific key, revoke affected session families or devices,
 review event-scoped audit activity, and restore readiness only after current
 configuration and dependency probes pass.
+
+Alert thresholds, metric handling, escalation, evidence preservation, and
+recovery procedures are defined in [operations and observability](operations-observability.md)
+and [incident response](incident-response.md).
