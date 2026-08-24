@@ -49,7 +49,9 @@ services:
     command: ["node", "dist/scripts/run-migrations.js"]
     environment:
       <<: *database-environment
-      NODE_ENV: production
+      # This is a disposable local database. Production migrations must continue
+      # to require signed recovery evidence and are exercised separately.
+      NODE_ENV: development
     depends_on:
       postgres:
         condition: service_healthy

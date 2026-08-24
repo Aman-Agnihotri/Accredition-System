@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 import { assertRunId, composeArgs, newRunId } from '../lib/config.js';
+
+const composeFile = fs.readFileSync(
+  new URL('../../../docker-compose.compatibility.yml', import.meta.url),
+  'utf8',
+);
+
+function serviceBlock(name) {
+  const match = composeFile.match(new RegExp(`^  ${name}:\\r?\\n([\\s\\S]*?)(?=^  [a-z][a-z-]*:|^networks:)`, 'm'));
+  assert.ok(match, `Expected ${name} service in the compatibility Compose file`);
+  return match[1];
+}
 
 test('creates bounded unique run IDs', () => {
   const first = newRunId(new Date('2026-08-04T12:34:56Z'), '00000001');
@@ -23,4 +35,9 @@ test('cleanup arguments are tied to one validated compatibility project', () => 
   assert.ok(args.some((value) => value.endsWith('docker-compose.compatibility.yml')));
   assert.throws(() => composeArgs({ ...context, projectName: 'ordinary-root' }, ['down']), /Refusing/);
   assert.throws(() => assertRunId('../../unsafe'), /Unsafe/);
+});
+
+test('keeps disposable migrations outside the production recovery gate', () => {
+  assert.match(serviceBlock('migration'), /NODE_ENV: development/);
+  assert.match(serviceBlock('backend'), /NODE_ENV: production/);
 });
