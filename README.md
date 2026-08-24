@@ -742,6 +742,35 @@ events are not. Use only a disposable development database.
 3. Network interruption during sync
 4. Multiple concurrent scanner devices
 
+### Accessibility and event-operation release validation
+
+Automated source checks cover Dashboard axe rules and keyboard navigation,
+Pass credential-state semantics and adaptive QR sizing, and Scan decision
+announcement, persistence, acknowledgement, and tactile-pattern contracts.
+These checks do not replace validation on installed applications or in the
+physical event environment.
+
+Before releasing an event build, record the application version, device/browser,
+operator, date, result, and evidence for each applicable check:
+
+- Dashboard keyboard-only operation, visible focus, dialog/panel focus return,
+  200% and 400% zoom, narrow reflow, reduced motion, and screen-reader output.
+- Pass VoiceOver and TalkBack output for login, credential loading, ready,
+  failed, synchronization, and support-reference states at large text sizes in
+  supported phone and tablet orientations.
+- Scan VoiceOver and TalkBack decision announcements; persistent deliberate
+  acknowledgement; distinguishable granted/denied text, sound, and tactile
+  feedback; and safe recovery after camera, storage, synchronization, and
+  authority failures.
+- Scanner operation under representative ambient light and event noise, with
+  gloves where expected, and with one-hand use. Confirm physical target size,
+  spacing, readability, and that authoritative decisions are not obscured or
+  resumed automatically.
+
+Any unexecuted installed-product or environment check remains release-open. A
+green CI run establishes source compatibility only; it is not evidence that a
+specific device, assistive technology, venue, or hosted deployment passed.
+
 ## 🔧 Configuration
 
 ### **Environment Variables**
