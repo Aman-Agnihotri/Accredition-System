@@ -7,6 +7,10 @@ const composeFile = fs.readFileSync(
   new URL('../../../docker-compose.compatibility.yml', import.meta.url),
   'utf8',
 );
+const convergenceScenario = fs.readFileSync(
+  new URL('../scenarios/convergence.js', import.meta.url),
+  'utf8',
+);
 
 function serviceBlock(name) {
   const match = composeFile.match(new RegExp(`^  ${name}:\\r?\\n([\\s\\S]*?)(?=^  [a-z][a-z-]*:|^networks:)`, 'm'));
@@ -40,4 +44,9 @@ test('cleanup arguments are tied to one validated compatibility project', () => 
 test('keeps disposable migrations outside the production recovery gate', () => {
   assert.match(serviceBlock('migration'), /NODE_ENV: development/);
   assert.match(serviceBlock('backend'), /NODE_ENV: production/);
+});
+
+test('uses the canonical account lifecycle tuple in disposable convergence data', () => {
+  assert.match(convergenceScenario, /is_active = false, account_status = 'deactivated'/);
+  assert.doesNotMatch(convergenceScenario, /identity_status = 'disabled'/);
 });

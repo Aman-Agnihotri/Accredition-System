@@ -178,18 +178,18 @@ export async function runConvergenceScenarios(context, identity) {
     const afterRedis = await authorityCount(context);
 
     const accountBefore = csvCount(await queryCompatibilityDatabase(context,
-      `SELECT COUNT(*) FROM users WHERE id = ${Number(identity.fixture.attendee_user_id)} AND is_active = true AND identity_status = 'active'`
+      `SELECT COUNT(*) FROM users WHERE id = ${Number(identity.fixture.attendee_user_id)} AND is_active = true AND account_status = 'active'`
     ));
     const accountMutation = await applyConfirmedFixtureMutation(context, {
       expectedDatabase: context.databaseName,
       reason: 'Exercise account-deactivation authority after compatibility workflows complete',
-      sql: `UPDATE users SET is_active = false, identity_status = 'disabled' WHERE id = ${Number(identity.fixture.attendee_user_id)}`,
+      sql: `UPDATE users SET is_active = false, account_status = 'deactivated' WHERE id = ${Number(identity.fixture.attendee_user_id)}`,
     });
     const accountAt = csvCount(await queryCompatibilityDatabase(context,
       `SELECT COUNT(*) FROM users WHERE id = ${Number(identity.fixture.attendee_user_id)} AND is_active = true`
     ));
     const accountAfter = csvCount(await queryCompatibilityDatabase(context,
-      `SELECT COUNT(*) FROM users WHERE id = ${Number(identity.fixture.attendee_user_id)} AND identity_status = 'disabled'`
+      `SELECT COUNT(*) FROM users WHERE id = ${Number(identity.fixture.attendee_user_id)} AND is_active = false AND account_status = 'deactivated'`
     ));
     const intervalMatrix = (await queryCompatibilityDatabase(context,
       `WITH boundary AS (SELECT TIMESTAMPTZ '2040-01-01T00:00:00Z' AS instant), probes AS (SELECT * FROM (VALUES ('before', TIMESTAMPTZ '2039-12-31T23:59:59.999Z'), ('at', TIMESTAMPTZ '2040-01-01T00:00:00Z'), ('after', TIMESTAMPTZ '2040-01-01T00:00:00.001Z')) AS value(label, instant)) SELECT COUNT(*) FROM probes, boundary WHERE (label = 'before' AND probes.instant < boundary.instant) OR (label = 'at' AND probes.instant = boundary.instant) OR (label = 'after' AND probes.instant > boundary.instant)`
